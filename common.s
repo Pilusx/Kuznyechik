@@ -149,7 +149,7 @@ reduce_loop:
     xor    %rbx, %rax             # rax = rax xor rbx
 continue_loop:
     shr    $1, %rbx               # rbx = 2^(n-1) p(x)
-    shr    $1, %rcx               # rcx = 2^(n-1)
+    shr    $1, %rcx               # rcx = 2^(n+7)
     test   $256, %rcx             # rcx xor 2^8  => Nothing to reduce
     jz     reduce_loop
     
