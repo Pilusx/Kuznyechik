@@ -1,7 +1,7 @@
 #!/bin/bash
 
 printf 'Building... '
-for bin in transformS key-schedule encrypt; do
+for bin in transformS transformR key-schedule encrypt; do
     gcc -Wall -no-pie $bin.s -o kuznyechik-$bin
 done
 printf 'done.\n'
@@ -16,19 +16,23 @@ assert_equal_files() {
     fi
 }
 
-test_transform_S() {
-    echo 'Testing transform S... '
+test_transforms() {
+    echo 'Testing transforms... '
     TEST_DIR="tests/"
 
-    while read -r input output; do
-        result=$(echo "${input}" | xxd -r -p - | ./kuznyechik-transformS | hexdump -v -e '16/1 "%02x" "\n"')
-        if [[ "${result}" != "${output}" ]]; then
-            printf "\nInput:${input}, Expected:${output}, Got:${result}\n"
-            echo "failed."
-            exit 1
-        fi
-        echo "${result} OK"
-    done < ${TEST_DIR}/transformS.txt
+    for transform in transformS transformR; do
+        echo "Testing $transform ..."
+        FILE="${TEST_DIR}/${transform}.txt"
+        while read -r input output; do
+            result=$(echo "${input}" | xxd -r -p - | ./kuznyechik-${transform} | hexdump -v -e '16/1 "%02x" "\n"')
+            if [[ "${result}" != "${output}" ]]; then
+                printf "\nInput:${input}, Expected:${output}, Got:${result}\n"
+                echo "failed."
+                exit 1
+            fi
+            echo "${result} OK"
+        done < "${FILE}"
+    done
     echo "done."
 }
 
@@ -64,7 +68,7 @@ test_decryption() {
     fi
 }
 
-test_transform_S
+test_transforms
 # test_key_schedule
 # test_encryption
 # test_decryption

@@ -41,7 +41,12 @@
     .byte 18, 26, 72, 104, 245, 129, 139, 199, 214, 32, 10, 8, 0, 76, 215, 116
 
     lambda:
-    .byte 148, 32, 133, 16, 194, 192, 1, 251, 1, 192, 194, 16, 133, 32, 148, 1
+    .byte 1, 148, 32, 133, 16, 194, 192, 1, 251, 1, 192, 194, 16, 133, 32, 148
+
+    # p(x) = x^8 + x^7 + x^6 + x + 1
+    # 451 = '111000011'
+    poly:
+    .word 451
 
 .text
 
@@ -122,4 +127,47 @@ assert_failed:
 
 .macro S_inv X
     S_builder pi_inv \X
+.endm
+
+kuznyechik_multiplication:
+    # Input : lower 64-bits in xmm0 and xmm1
+    # Output: 64-bits in rax
+    pclmulqdq  $0, %xmm1, %xmm0   # Polynomial mulitplication in GF(2)[x]/x^128
+    pextrw     $0, %xmm0, %rax    # Extract 16-bit result to %ax
+    ret
+
+kuznyechik_reduce:
+    # Reduce the final result (mod p(x))
+    mov    poly, %rbx             # rbx = p(x) = 451
+    shl    $7,   %rbx             # rbx = 2^7 p(x)
+    mov    $32768, %rcx           # rcx = 2^15 = 128
+
+    # Loop n = 7 ... 0
+reduce_loop:
+    test   %rax, %rcx             # rax & 2^(n + 8)
+    jz continue_loop
+    xor    %rbx, %rax             # rax = rax xor rbx
+continue_loop:
+    shr    $1, %rbx               # rbx = 2^(n-1) p(x)
+    shr    $1, %rcx               # rcx = 2^(n-1)
+    test   $256, %rcx             # rcx xor 2^8  => Nothing to reduce
+    jz     reduce_loop
+    
+    ret
+
+.macro kuznyechik_linear_functional X
+    # Input: X - 128bit value (16 parts)
+    # Pseudocode: 
+    # z = 0
+    # for i in range(16):
+    #    x = kuznyechik_multiplication(lambda[i], X[i])
+    #    z = x xor z    # kuznyechik_add
+    # z = kuznyechik_reduce(z)
+.endm
+
+.macro R X
+    pslldq $1, \X                # Shift left
+    # TODO
+    kuznyechik_linear_functional \X
+    pinsrb $0, %rax, \X          # save the rbx to the ith-byte of X 
 .endm
