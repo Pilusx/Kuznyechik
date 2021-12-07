@@ -109,7 +109,7 @@ assert_failed:
 .macro S_partial i P X
     # Uses rax, and register X.
     pextrb \i, \X, %rax          # save ith-byte of X to rax
-    mov \P(%rax), %rax           # ax = pi[index]
+    mov \P(%rax), %rax           # al = pi[index]
     pinsrb \i, %rax, \X          # save the rbx to the ith-byte of X 
 .endm
 
@@ -235,6 +235,17 @@ transform_R:
     # Modifies xmm0, xmm1, rax, rbx, rcx.
     # Output: xmm2
     call kuznyechik_linear_functional
-    psrldq $1, %xmm2             # Shift right logical
+    psrldq $1, %xmm2             # xmm2 = (xmm2 >> 1)
     pinsrb $15, %rax, %xmm2      # save the result to the 15th-byte of xmm2
+    ret
+
+transform_R_inv:
+    # Input: xmm2
+    # Modifies xmm0, xmm1, rax, rbx, rcx.
+    # Output: xmm2
+    pextrb $15, %xmm2, %rax
+    pslldq $1, %xmm2             # xmm2 = (xmm2 << 1)
+    pinsrb $0, %rax, %xmm2       # xmm2 = xmm2 + al
+    call kuznyechik_linear_functional
+    pinsrb $0, %rax, %xmm2       # save the result to the 0th byte of xmm2
     ret
