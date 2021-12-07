@@ -3,16 +3,13 @@
 .text
 .globl main
 main:
-    # call   read_block
-    # R      %xmm0
-    
-    # TODO
-    mov  $171, %rax
-    movq %rax, %xmm0
-    mov  $200, %rax
-    movq %rax, %xmm1
-    call kuznyechik_multiplication
+    call   read_block # Reads bytes in the big endian order.
+    call   change_endianness # Change to little endian.
 
-    movq   %rax, %xmm0
+    movaps %xmm0, %xmm2
+    call   transform_R
+    movaps %xmm2, %xmm0
+
+    call   change_endianness # Change to big endian.
     call   write_block
     jmp    exit

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 printf 'Building... '
-for bin in transformS transformR key-schedule encrypt; do
+for bin in multiplication transformS transformR key-schedule encrypt; do
     gcc -Wall -no-pie $bin.s -o kuznyechik-$bin
 done
 printf 'done.\n'
@@ -13,6 +13,17 @@ assert_equal_files() {
         exit 1
     else
         printf 'done.\n'
+    fi
+}
+
+test_multiplication() {
+    echo "Testing multiplication..."
+    ./kuznyechik-multiplication
+    if [ "$?" -ne 0 ]; then
+        printf "failed."
+        exit 1
+    else
+        printf "done.\n"
     fi
 }
 
@@ -68,6 +79,7 @@ test_decryption() {
     fi
 }
 
+test_multiplication
 test_transforms
 # test_key_schedule
 # test_encryption

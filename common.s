@@ -43,6 +43,9 @@
     lambda:
     .byte 1, 148, 32, 133, 16, 194, 192, 1, 251, 1, 192, 194, 16, 133, 32, 148
 
+    order:
+    .byte 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
     # p(x) = x^8 + x^7 + x^6 + x + 1
     # 451 = '111000011'
     poly:
@@ -78,6 +81,15 @@ read_block:
 write_block:
     movaps %xmm0, buf
     linux_syscall $NR_write, $1, $buf, $16
+    ret
+
+change_endianness:
+    # Input: xmm0
+    # Output: xmm0
+    # Modifies xmm1
+    # Changes endianness of xmm0: little <-> big
+    movups order, %xmm1
+    pshufb %xmm1, %xmm0 # Change to little endian.
     ret
 
 exit:
@@ -122,6 +134,8 @@ assert_failed:
 .endm
 
 .macro S X
+    # X = S(X)
+    # Modifies rax.
     S_builder pi \X
 .endm
 
@@ -132,42 +146,95 @@ assert_failed:
 kuznyechik_multiplication:
     # Input : lower 64-bits in xmm0 and xmm1
     # Output: 64-bits in rax
+    # Modifies xmm0
     pclmulqdq  $0, %xmm1, %xmm0   # Polynomial mulitplication in GF(2)[x]/x^128
     pextrw     $0, %xmm0, %rax    # Extract 16-bit result to %ax
     ret
 
 kuznyechik_reduce:
-    # Reduce the final result (mod p(x))
+    # Reduces the final result (mod p(x))
+    # Input: Polynomial encoded in 16bits - ax
+    # Output: Reduced polynomial encoded in 8 bits - al
+    # Modifies rax, rbx, rcx.
+    # Pseudocode:
+    # b = 2**7 * poly
+    # c = 2**15
+    # while c >= 2**8:
+    #    if a & c:
+    #       a = a ^ b
+    #    b = b >> 1
+    #    c = c >> 1
+    # return a
+
     mov    poly, %rbx             # rbx = p(x) = 451
-    shl    $7,   %rbx             # rbx = 2^7 p(x)
+    sal    $7,   %rbx             # rbx = 2^7 p(x)
     mov    $32768, %rcx           # rcx = 2^15 = 128
 
     # Loop n = 7 ... 0
 reduce_loop:
     test   %rax, %rcx             # rax & 2^(n + 8)
-    jz continue_loop
+    jz     continue_loop
     xor    %rbx, %rax             # rax = rax xor rbx
 continue_loop:
-    shr    $1, %rbx               # rbx = 2^(n-1) p(x)
-    shr    $1, %rcx               # rcx = 2^(n+7)
-    test   $256, %rcx             # rcx xor 2^8  => Nothing to reduce
-    jz     reduce_loop
+    sar    $1, %rbx               # rbx = 2^(n-1) p(x)
+    sar    $1, %rcx               # rcx = 2^(n+7)
+    cmp    $256, %rcx             # rcx >= 2^8  => Next iteration
+    jge    reduce_loop
     
     ret
 
-.macro kuznyechik_linear_functional X
-    # Input: X - 128bit value (16 parts)
-    # Pseudocode: 
-    # z = 0
-    # for i in range(16):
-    #    x = kuznyechik_multiplication(lambda[i], X[i])
-    #    z = x xor z    # kuznyechik_add
-    # z = kuznyechik_reduce(z)
+.macro kuznyechik_linear_functional_step i
+    pxor   %xmm0, %xmm0
+    pextrb \i, %xmm2, %rax    # save ith-byte of xmm2 to rax
+    pinsrb $0, %rax, %xmm0
+    mov    \i, %rax           # rax = i
+    mov    lambda(%rax), %rax # rax = lambda[rax] = lambda[i]
+    pinsrb $0, %rax, %xmm1
+    call   kuznyechik_multiplication
+    xor    %rax, %rbx         # Store the partial result. (kuznyechik_add)
 .endm
 
-.macro R X
-    pslldq $1, \X                # Shift left
-    # TODO
-    kuznyechik_linear_functional \X
-    pinsrb $0, %rax, \X          # save the rbx to the ith-byte of X 
-.endm
+kuznyechik_linear_functional:
+    # Input: xmm2 - 128bit value (16 parts)
+    # Output: al - 8bit result
+    # Modifies xmm0, xmm1, rax, rbx, rcx.
+    # Pseudocode:
+    # b = 0
+    # for i in range(16):
+    #    a = kuznyechik_multiplication(lambda[i], X[i])
+    #    b = a xor b    # kuznyechik_add
+    # a = b
+    # a = kuznyechik_reduce(a)
+    # return a
+
+    xor    %rbx, %rbx
+    pxor   %xmm1, %xmm1
+    kuznyechik_linear_functional_step $0
+    kuznyechik_linear_functional_step $1
+    kuznyechik_linear_functional_step $2
+    kuznyechik_linear_functional_step $3
+    kuznyechik_linear_functional_step $4
+    kuznyechik_linear_functional_step $5
+    kuznyechik_linear_functional_step $6
+    kuznyechik_linear_functional_step $7
+    kuznyechik_linear_functional_step $8
+    kuznyechik_linear_functional_step $9
+    kuznyechik_linear_functional_step $10
+    kuznyechik_linear_functional_step $11
+    kuznyechik_linear_functional_step $12
+    kuznyechik_linear_functional_step $13
+    kuznyechik_linear_functional_step $14
+    kuznyechik_linear_functional_step $15
+
+    mov    %rbx, %rax
+    call   kuznyechik_reduce
+    ret
+
+transform_R:
+    # Input: xmm2
+    # Modifies xmm0, xmm1, rax, rbx, rcx.
+    # Output: xmm2
+    call kuznyechik_linear_functional
+    psrldq $1, %xmm2             # Shift right logical
+    pinsrb $15, %rax, %xmm2      # save the result to the 15th-byte of xmm2
+    ret
