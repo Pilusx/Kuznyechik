@@ -1,7 +1,7 @@
 #!/bin/bash
 
 printf 'Building... '
-for bin in multiplication transformS transformR key-schedule encrypt; do
+for bin in multiplication transformL  transformS transformR key-schedule encrypt; do
     gcc -Wall -no-pie $bin.s -o kuznyechik-$bin
 done
 printf 'done.\n'
@@ -31,7 +31,7 @@ test_transforms() {
     echo 'Testing transforms... '
     TEST_DIR="tests/"
 
-    for transform in transformS transformR; do
+    for transform in transformS transformR transformL; do
         echo "Testing $transform ..."
         FILE="${TEST_DIR}/${transform}.txt"
         while read -r input output; do
@@ -81,6 +81,6 @@ test_decryption() {
 
 test_multiplication
 test_transforms
-# test_key_schedule
+#test_key_schedule
 # test_encryption
 # test_decryption

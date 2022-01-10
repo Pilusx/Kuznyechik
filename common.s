@@ -249,3 +249,41 @@ transform_R_inv:
     call kuznyechik_linear_functional
     pinsrb $0, %rax, %xmm2       # save the result to the 0th byte of xmm2
     ret
+
+
+transform_L:
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    call transform_R
+    ret
+
+transform_L_inv:
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
+    call transform_R_inv
