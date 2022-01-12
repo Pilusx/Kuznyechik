@@ -81,6 +81,6 @@ test_decryption() {
 
 test_multiplication
 test_transforms
-#test_key_schedule
+test_key_schedule
 # test_encryption
 # test_decryption

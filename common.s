@@ -100,10 +100,74 @@ assert_failed:
     # Call _exit(1)
     linux_syscall $NR_exit, $1
 
-.macro key_generate i K1 K2 K3 K4
-    # TODO
+.macro key_generate_lower_step i A B
+	mov  \i, %rax
+	xorps %xmm2,%xmm2
+	pinsrb $0, %rax, %xmm2
+	call transform_L
+        movaps %xmm2, %xmm0
+	call change_endianness
+        
+	xorps  \A,  %xmm0
+	S %xmm0
+	call change_endianness
+	movaps %xmm0, %xmm2
+	call transform_L
+        movaps %xmm2, %xmm0
+	call change_endianness
+	xorps  \B,  %xmm0
+	movaps \A, \B
+	movaps %xmm0, \A
+
+.endm
+
+.macro key_generate K1 K2 K3 K4 K5 K6 K7 K8 K9 K10
+    #Input: xmm5, xmm6
+    #Output: xmm5, xmm6, xmm7, xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14
+
     movaps \K1, \K3
     movaps \K2, \K4
+    key_generate_lower_step $1 \K3 \K4
+    key_generate_lower_step $2 \K3 \K4
+    key_generate_lower_step $3 \K3 \K4
+    key_generate_lower_step $4 \K3 \K4
+    key_generate_lower_step $5 \K3 \K4
+    key_generate_lower_step $6 \K3 \K4
+    key_generate_lower_step $7 \K3 \K4
+    key_generate_lower_step $8 \K3 \K4
+    
+    movaps \K3, \K5
+    movaps \K4, \K6
+    key_generate_lower_step $9 \K5 \K6
+    key_generate_lower_step $10 \K5 \K6
+    key_generate_lower_step $11 \K5 \K6
+    key_generate_lower_step $12 \K5 \K6
+    key_generate_lower_step $13 \K5 \K6
+    key_generate_lower_step $14 \K5 \K6
+    key_generate_lower_step $15 \K5 \K6
+    key_generate_lower_step $16 \K5 \K6
+
+    movaps \K5, \K7
+    movaps \K6, \K8
+    key_generate_lower_step $17 \K7 \K8
+    key_generate_lower_step $18 \K7 \K8
+    key_generate_lower_step $19 \K7 \K8
+    key_generate_lower_step $20 \K7 \K8
+    key_generate_lower_step $21 \K7 \K8
+    key_generate_lower_step $22 \K7 \K8
+    key_generate_lower_step $23 \K7 \K8
+    key_generate_lower_step $24 \K7 \K8
+
+    movaps \K7, \K9
+    movaps \K8, \K10
+    key_generate_lower_step $25 \K9 \K10
+    key_generate_lower_step $26 \K9 \K10
+    key_generate_lower_step $27 \K9 \K10
+    key_generate_lower_step $28 \K9 \K10
+    key_generate_lower_step $29 \K9 \K10
+    key_generate_lower_step $30 \K9 \K10
+    key_generate_lower_step $31 \K9 \K10
+    key_generate_lower_step $32 \K9 \K10
 .endm
 
 .macro S_partial i P X
@@ -252,6 +316,9 @@ transform_R_inv:
 
 
 transform_L:
+    # Input: xmm2
+    # Modifies xmm0, xmm1, rax, rbx, rcx.
+    # Output: xmm2
     call transform_R
     call transform_R
     call transform_R
@@ -271,6 +338,9 @@ transform_L:
     ret
 
 transform_L_inv:
+    # Input: xmm2
+    # Modifies xmm0, xmm1, rax, rbx, rcx.
+    # Output: xmm2
     call transform_R_inv
     call transform_R_inv
     call transform_R_inv

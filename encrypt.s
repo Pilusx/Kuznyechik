@@ -16,10 +16,8 @@ main:
 
     # Compute an encryption key schedule.
 
-    key_generate 0 %xmm5 %xmm6 %xmm7 %xmm8
-    key_generate 8 %xmm7 %xmm8 %xmm9 %xmm10
-    key_generate 16 %xmm9 %xmm10 %xmm11 %xmm12
-    key_generate 24 %xmm12 %xmm13 %xmm14 %xmm15
+    key_generate %xmm5 %xmm6 %xmm7 %xmm8 %xmm9 %xmm10 %xmm11 %xmm12 %xmm13 %xmm14
+
 
 encrypt:
     # Try to read a block of plaintext.

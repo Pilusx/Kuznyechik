@@ -5,7 +5,7 @@
 .text
 .globl main
 main:
-    # Read the user key from stdin into %xmm5.
+    # Read the user key from stdin into %xmm5 and %xmm6.
     #
     # It serves as the zeroth round key and also the seed
     # (in %xmm0) for the key expansion procedure.
@@ -16,10 +16,7 @@ main:
 
     # Compute an encryption key schedule.
 
-    key_generate 0 %xmm5 %xmm6 %xmm7 %xmm8
-    key_generate 8 %xmm7 %xmm8 %xmm9 %xmm10
-    key_generate 16 %xmm9 %xmm10 %xmm11 %xmm12
-    key_generate 24 %xmm12 %xmm13 %xmm14 %xmm15
+    key_generate %xmm5 %xmm6 %xmm7 %xmm8 %xmm9 %xmm10 %xmm11 %xmm12 %xmm13 %xmm14
 
     # Print the keys
     movaps %xmm5, %xmm0
@@ -42,7 +39,6 @@ main:
     call   write_block
     movaps %xmm14, %xmm0
     call   write_block
-
     # Exit
     jmp exit
 
