@@ -1,7 +1,7 @@
 #!/bin/bash
 
 printf 'Building... '
-for bin in multiplication transformL  transformS transformR key-schedule encrypt; do
+for bin in multiplication transformL  transformS transformR key-schedule encrypt decrypt; do
     gcc -Wall -no-pie $bin.s -o kuznyechik-$bin
 done
 printf 'done.\n'
@@ -73,17 +73,19 @@ test_encryption() {
 test_decryption() {
     echo 'Testing decryption... '
     TEST_DIR="tests"
-    cat ${TEST_DIR}/decryption.txt | read -r key input output
+    cat ${TEST_DIR}/decryption.txt | while read -r key input output; do
     result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-decrypt | hexdump -v -e '16/1 "%02x"')
     if [[ "${result}" != "${output}" ]]; then
         echo "Input:${input}, Expected:${output}, Got:${result}"
         echo "failed."
         exit 1
     fi
+    echo "Done"
+    done
 }
 
 test_multiplication
 test_transforms
 test_key_schedule
 test_encryption
-# test_decryption
+test_decryption

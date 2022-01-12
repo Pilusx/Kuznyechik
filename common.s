@@ -115,8 +115,13 @@ assert_failed:
 .macro inverse_round KEY
 # input: xmm0
 # output: xmm0
-
-
+	xorps \KEY, %xmm0
+	call change_endianness
+	movaps %xmm0, %xmm2
+	call transform_L_inv
+        movaps %xmm2, %xmm0
+	call change_endianness
+	S_inv %xmm0
 .endm
 
 
@@ -377,3 +382,4 @@ transform_L_inv:
     call transform_R_inv
     call transform_R_inv
     call transform_R_inv
+    ret

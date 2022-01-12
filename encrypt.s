@@ -23,6 +23,8 @@ encrypt:
     # Try to read a block of plaintext.
     # Exit on EOF.
     call read_block
+    cmp  $16, %rax
+    jl   exit
 
     round %xmm5
     round %xmm6
@@ -36,6 +38,6 @@ encrypt:
 
     xorps %xmm14, %xmm0
     call write_block
-    
+    jmp  encrypt
 
 # vim: ft=asm
