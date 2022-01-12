@@ -58,13 +58,16 @@ test_key_schedule() {
 test_encryption() {
     echo 'Testing encryption... '
     TEST_DIR="tests"
-    cat ${TEST_DIR}/encryption.txt | read -r key input output
+    cat ${TEST_DIR}/encryption.txt | while read -r  key input output; do
+
     result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-encrypt | hexdump -v -e '16/1 "%02x"')
     if [[ "${result}" != "${output}" ]]; then
-        echo "\nInput:${input}, Expected:${output}, Got:${result}"
+        echo "Input:${input}, Expected:${output}, Got:${result}"
         echo "failed."
         exit 1
     fi
+    echo "Done"
+    done
 }
 
 test_decryption() {
@@ -82,5 +85,5 @@ test_decryption() {
 test_multiplication
 test_transforms
 test_key_schedule
-# test_encryption
+test_encryption
 # test_decryption

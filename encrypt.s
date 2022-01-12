@@ -23,14 +23,19 @@ encrypt:
     # Try to read a block of plaintext.
     # Exit on EOF.
     call read_block
-    cmp  $16, %rax
-    jl   exit
 
-    # Encrypt the block.
-    jmp exit
+    round %xmm5
+    round %xmm6
+    round %xmm7
+    round %xmm8
+    round %xmm9
+    round %xmm10
+    round %xmm11
+    round %xmm12
+    round %xmm13
 
-    # Write it to stdout and loop.
+    xorps %xmm14, %xmm0
     call write_block
-    jmp  encrypt
+    
 
 # vim: ft=asm

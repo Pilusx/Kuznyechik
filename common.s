@@ -100,6 +100,26 @@ assert_failed:
     # Call _exit(1)
     linux_syscall $NR_exit, $1
 
+.macro round KEY
+# input: xmm0
+# output: xmm0
+	xorps \KEY, %xmm0
+	S %xmm0
+	call change_endianness
+	movaps %xmm0, %xmm2
+	call transform_L
+        movaps %xmm2, %xmm0
+	call change_endianness
+.endm
+
+.macro inverse_round KEY
+# input: xmm0
+# output: xmm0
+
+
+.endm
+
+
 .macro key_generate_lower_step i A B
 	mov  \i, %rax
 	xorps %xmm2,%xmm2
