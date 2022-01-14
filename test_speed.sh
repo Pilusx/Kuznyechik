@@ -2,9 +2,9 @@
 
 mkdir -p out
 echo "* Generating data..."
-dd if=/dev/urandom bs=16 count=1 > out/aes_key.bin
-dd if=/dev/urandom bs=16 count=2 > out/kuz_key.bin
-dd if=/dev/urandom bs=16 count=1 > out/sample.bin
+openssl rand -out out/aes_key.bin $(( 16 ))
+openssl rand -out out/kuz_key.bin $(( 16 * 2 ))
+openssl rand -out out/sample.bin $(( 16 * 2 ** 24 )) # 0.25 GB
 
 echo "* Size of data"
 du -h --apparent-size -B 1 out/sample.bin
@@ -16,7 +16,7 @@ benchmark_aes() {
     cat out/aes_key.bin | xxd -p
 
     echo "** Encryption..."
-    time cat out/aes_key.bin out/sample.bin | ./kuznyechik-encrypt > out/aes_encrypted.bin
+    time cat out/aes_key.bin out/sample.bin | ./aesni-examples/encrypt > out/aes_encrypted.bin
     # cat out/encrypted.bin | xxd -p
 
     echo "** Decryption..."
@@ -35,7 +35,7 @@ benchmark_kuznyechik() {
     echo "* Kuznyechik"
 
     echo "** Key"
-    cat out/key_kuz.bin | xxd -p
+    cat out/kuz_key.bin | xxd -p
 
     echo "** Encryption..."
     time cat out/kuz_key.bin out/sample.bin | ./kuznyechik-encrypt > out/kuz_encrypted.bin
@@ -53,7 +53,7 @@ benchmark_kuznyechik() {
     fi
 }
 
-# benchmark_aes
+benchmark_aes
 benchmark_kuznyechik
 
 echo "* File sizes (in bytes)..."
