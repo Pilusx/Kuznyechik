@@ -1,42 +1,42 @@
 * Generating data...
 * Size of data
-268435456       out/sample.bin
+268435456	out/sample.bin
 * AES
 ** Key
-8d31a4f26e5fbe7619c2e70d9d4e7a26
+1b98f50ae2f102321ab26d26d13aa764
 ** Encryption...
 
-real    0m43,497s
-user    0m11,161s
-sys     0m32,462s
+real	0m34,184s
+user	0m10,644s
+sys	0m24,371s
 ** Decryption...
 
-real    0m45,382s
-user    0m11,330s
-sys     0m34,086s
+real	0m33,719s
+user	0m10,940s
+sys	0m23,905s
 ** Comparison...
 OK
 * Kuznyechik
 ** Key
-f40db461661d95b858df043940d3e47a3358cbe5d482beb6e415f3e0d399
-47dc
+ef1f62dbaca5fb9635313b995427fb4f3d56c903cca9583e3420e46cd8e3
+029a
 ** Encryption...
 
-real    4m42,351s
-user    3m45,913s
-sys     0m52,600s
+real	3m39,856s
+user	3m14,774s
+sys	0m26,734s
 ** Decryption...
 
-real    4m33,868s
-user    3m44,182s
-sys     0m49,832s
+real	3m39,335s
+user	3m14,359s
+sys	0m26,087s
 ** Comparison...
 OK
 * File sizes (in bytes)...
-268435456       out/aes_decrypted.bin
-268435456       out/aes_encrypted.bin
-16      out/aes_key.bin
-268435456       out/kuz_decrypted.bin
-268435456       out/kuz_encrypted.bin
-32      out/kuz_key.bin
-268435456       out/sample.bin
+268435456	out/aes_decrypted.bin
+268435456	out/aes_encrypted.bin
+16	out/aes_key.bin
+268435456	out/kuz_decrypted.bin
+268435456	out/kuz_encrypted.bin
+32	out/kuz_key.bin
+268435456	out/sample.bin

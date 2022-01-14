@@ -1,0 +1,15 @@
+0.25 GiB = 268.435456 MB
+* Real time
+** AES-NI Encryption    : 7.853 (MB/s)
+** AES-NI Decryption    : 7.961 (MB/s)
+** Kuznyechik Encryption: 1.221 (MB/s)
+** Kuznyechik Decryption: 1.224 (MB/s)
+* User time
+** AES-NI Encryption    : 25.219 (MB/s)
+** AES-NI Decryption    : 24.537 (MB/s)
+** Kuznyechik Encryption: 1.378 (MB/s)
+** Kuznyechik Decryption: 1.381 (MB/s)
+* Other
+** AES-NI: ~18.0x
+** Optim : ~123.0x
+** Nvidia: ~21768.0x
