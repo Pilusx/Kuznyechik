@@ -17,7 +17,7 @@ assert_equal_files() {
 }
 
 test_multiplication() {
-    echo "Testing multiplication..."
+    printf "Testing multiplication... "
     ./kuznyechik-multiplication
     if [ "$?" -ne 0 ]; then
         printf "failed."
@@ -28,7 +28,6 @@ test_multiplication() {
 }
 
 test_transforms() {
-    echo 'Testing transforms... '
     TEST_DIR="tests/"
 
     for transform in transformS transformR transformL; do
@@ -59,14 +58,13 @@ test_encryption() {
     echo 'Testing encryption... '
     TEST_DIR="tests"
     cat ${TEST_DIR}/encryption.txt | while read -r  key input output; do
-
-    result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-encrypt | hexdump -v -e '16/1 "%02x"')
-    if [[ "${result}" != "${output}" ]]; then
-        echo "Input:${input}, Expected:${output}, Got:${result}"
-        echo "failed."
-        exit 1
-    fi
-    echo "Done"
+        result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-encrypt | hexdump -v -e '16/1 "%02x"')
+        if [[ "${result}" != "${output}" ]]; then
+            echo "Input:${input}, Expected:${output}, Got:${result}"
+            echo "failed."
+            exit 1
+        fi
+        echo "${result} OK"
     done
 }
 
@@ -74,13 +72,13 @@ test_decryption() {
     echo 'Testing decryption... '
     TEST_DIR="tests"
     cat ${TEST_DIR}/decryption.txt | while read -r key input output; do
-    result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-decrypt | hexdump -v -e '16/1 "%02x"')
-    if [[ "${result}" != "${output}" ]]; then
-        echo "Input:${input}, Expected:${output}, Got:${result}"
-        echo "failed."
-        exit 1
-    fi
-    echo "Done"
+        result=$(echo "${key}${input}" | xxd -r -p - | ./kuznyechik-decrypt | hexdump -v -e '16/1 "%02x"')
+        if [[ "${result}" != "${output}" ]]; then
+            echo "Input:${input}, Expected:${output}, Got:${result}"
+            echo "failed."
+            exit 1
+        fi
+        echo "${result} OK"
     done
 }
 
